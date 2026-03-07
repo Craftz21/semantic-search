@@ -1,0 +1,41 @@
+# ── Data & Numerics ──────────────────────────────────────────────────────────
+numpy==1.26.4              # Core math library. Vectors, matrices, dot products.
+scikit-learn==1.4.2        # Two jobs: (1) fetch the 20newsgroups dataset,
+                           # (2) give us TF-IDF and silhouette score for cluster eval.
+
+# ── Embeddings ───────────────────────────────────────────────────────────────
+sentence-transformers==3.0.1  # Downloads and runs MiniLM-L6-v2.
+                              # Converts raw text → 384-dimensional float vectors.
+                              # Each number in that vector captures some aspect of meaning.
+torch==2.3.1               # sentence-transformers runs on top of PyTorch.
+                           # On Windows CPU-only is fine for this dataset size.
+
+# ── Vector Store ─────────────────────────────────────────────────────────────
+faiss-cpu==1.8.0           # Facebook AI Similarity Search.
+                           # Stores all document vectors and finds nearest neighbours fast.
+                           # CPU version is fine — GPU version needs CUDA setup.
+
+# ── Fuzzy Clustering ─────────────────────────────────────────────────────────
+# Spherical FCM implemented from scratch in clustering/fuzzy_cluster.py
+# Uses: scikit-learn (KMeans warm-start + PCA), numpy (FCM math)
+
+# ── API ──────────────────────────────────────────────────────────────────────
+fastapi==0.111.0           # Web framework. Handles HTTP routing, request parsing,
+                           # response serialization. Much faster than Flask.
+uvicorn==0.30.1            # ASGI server that actually *runs* FastAPI.
+                           # Think of FastAPI as the blueprint, uvicorn as the engine.
+pydantic==2.7.1            # Data validation. Defines the shape of request/response JSON.
+                           # FastAPI uses it under the hood automatically.
+
+# ── Utilities ────────────────────────────────────────────────────────────────
+tqdm==4.66.4               # Progress bars. Embedding 18000 docs takes a few minutes —
+                           # you want to see progress.
+python-dotenv==1.0.1       # Loads .env files for config (model name, threshold, etc.)
+joblib==1.4.2              # Saves/loads Python objects to disk efficiently.
+                           # We use it to persist the FAISS index and cluster model
+                           # so we don't recompute on every server restart.
+
+# ── Notebooks (optional, for experiments) ────────────────────────────────────
+jupyter==1.0.0
+matplotlib==3.9.0
+seaborn==0.13.2
