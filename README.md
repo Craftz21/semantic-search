@@ -6,27 +6,27 @@
 ## Architecture
 
 ```
-User Query
-    │
-    ▼
-┌─────────────────────────────────┐
-│  TextEmbedder                   │
-│  MiniLM-L6-v2 → 384-dim vector  │
-│  L2-normalized (cosine = dot)   │
-└────────────────┬────────────────┘
-                 │
-                 ▼
-┌─────────────────────────────────┐
-│  Spherical FCM Clusterer        │
-│  PCA 384 → 50 dims              │
-│  KMeans warm-start              │
-│  Cosine distance FCM            │
-│  Output: membership vector (K,) │
-│  e.g. [cluster_9: 0.317,        │
-│         cluster_8: 0.086, ...]  │
-└────────────────┬────────────────┘
-                 │
-                 ▼
+                         User Query
+                             │
+                             ▼
+            ┌─────────────────────────────────┐
+            │  TextEmbedder                   │
+            │  MiniLM-L6-v2 → 384-dim vector  │
+            │  L2-normalized (cosine = dot)   │
+            └────────────────┬────────────────┘
+                             │
+                             ▼
+            ┌─────────────────────────────────┐
+            │  Spherical FCM Clusterer        │
+            │  PCA 384 → 50 dims              │
+            │  KMeans warm-start              │
+            │  Cosine distance FCM            │
+            │  Output: membership vector (K,) │
+            │  e.g. [cluster_9: 0.317,        │
+            │         cluster_8: 0.086, ...]  │
+            └────────────────┬────────────────┘
+                             │
+                             ▼
 ┌──────────────────────────────────────────────────────────┐
 │               Cluster-Aware Semantic Cache               │
 │                                                          │
