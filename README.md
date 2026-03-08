@@ -6,50 +6,50 @@
 ## Architecture
 
 ```
-                                                                       User Query
-                                                                           │
-                                                                           ▼
-                                                          ┌─────────────────────────────────┐
-                                                          │  TextEmbedder                   │
-                                                          │  MiniLM-L6-v2 → 384-dim vector  │
-                                                          │  L2-normalized (cosine = dot)   │
-                                                          └────────────────┬────────────────┘
-                                                                           │
-                                                                           ▼
-                                                          ┌─────────────────────────────────┐
-                                                          │  Spherical FCM Clusterer        │
-                                                          │  PCA 384 → 50 dims              │
-                                                          │  KMeans warm-start              │
-                                                          │  Cosine distance FCM            │
-                                                          │  Output: membership vector (K,) │
-                                                          │  e.g. [cluster_9: 0.317,        │
-                                                          │         cluster_8: 0.086, ...]  │
-                                                          └────────────────┬────────────────┘
-                                                                           │
-                                                                           ▼
-                                              ┌──────────────────────────────────────────────────────────┐
-                                              │               Cluster-Aware Semantic Cache               │
-                                              │                                                          │
-                                              │   cache = { cluster_id → [CacheEntry, ...] }             │
-                                              │                                                          │
-                                              │   Lookup: search ONLY dominant cluster bucket            │
-                                              │   O(N_total) → O(N_cluster)  ≈ 16× faster at scale      │
-                                              │                                                          │
-                                              │   threshold_c = base ± Δ(intra-cluster variance)         │
-                                              │   Adaptive range: 0.743 – 0.896 across 16 clusters       │
-                                              │                                                          │
-                                              │   HIT  → return cached result   (~15ms)                  │
-                                              │   MISS → FAISS HNSW search      (~400ms)                 │
-                                              └──────────┬──────────────────────────┬────────────────────┘
-                                                         │ HIT                      │ MISS
-                                                         ▼                          ▼
-                                                  Return cached result       FAISS HNSW Search
-                                                  + metadata                 top-10 documents
-                                                                                    │
-                                                                                    ▼
-                                                                             Synthesize result
-                                                                             Store in cache
-                                                                             Return response
+                                          User Query
+                                              │
+                                              ▼
+                              ┌─────────────────────────────────┐
+                              │  TextEmbedder                   │
+                              │  MiniLM-L6-v2 → 384-dim vector  │
+                              │  L2-normalized (cosine = dot)   │
+                              └────────────────┬────────────────┘
+                                               │
+                                               ▼
+                              ┌─────────────────────────────────┐
+                              │  Spherical FCM Clusterer        │
+                              │  PCA 384 → 50 dims              │
+                              │  KMeans warm-start              │
+                              │  Cosine distance FCM            │
+                              │  Output: membership vector (K,) │
+                              │  e.g. [cluster_9: 0.317,        │
+                              │         cluster_8: 0.086, ...]  │
+                              └────────────────┬────────────────┘
+                                               │
+                                               ▼
+                    ┌──────────────────────────────────────────────────────────┐
+                    │               Cluster-Aware Semantic Cache               │
+                    │                                                          │
+                    │   cache = { cluster_id → [CacheEntry, ...] }             │
+                    │                                                          │
+                    │   Lookup: search ONLY dominant cluster bucket            │
+                    │   O(N_total) → O(N_cluster)  ≈ 16× faster at scale       │
+                    │                                                          │
+                    │   threshold_c = base ± Δ(intra-cluster variance)         │
+                    │   Adaptive range: 0.743 – 0.896 across 16 clusters       │
+                    │                                                          │
+                    │   HIT  → return cached result   (~15ms)                  │
+                    │   MISS → FAISS HNSW search      (~400ms)                 │
+                    └──────────┬──────────────────────────┬────────────────────┘
+                               │ HIT                      │ MISS
+                               ▼                          ▼
+                        Return cached result       FAISS HNSW Search
+                        + metadata                 top-10 documents
+                                                          │
+                                                          ▼
+                                                   Synthesize result
+                                                   Store in cache
+                                                   Return response
 ```
 
 ---
